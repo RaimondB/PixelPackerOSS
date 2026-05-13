@@ -23,6 +23,7 @@ import {
   paletteTo3BytesRGB,
 } from '../storage/AnimationStore';
 import { BUILTIN_ANIMATIONS } from '../data/builtinAnimations';
+import { shareBackup, importWithAlerts } from '../storage/BackupService';
 
 interface Props {
   device: Backpack;
@@ -252,6 +253,7 @@ export function AnimationEditorScreen({ device, onBack, existingId }: Props) {
           setSavedList(l => l.filter(a => a.id !== id));
         }}
         onClose={() => setShowList(false)}
+        onRefresh={() => AnimationStore.list().then(setSavedList)}
       />
     );
   }
@@ -378,14 +380,29 @@ export function AnimationEditorScreen({ device, onBack, existingId }: Props) {
 // ── Saved list view ────────────────────────────────────────────────────────────
 
 function SavedListView({
-  list, builtins, onLoad, onDelete, onClose,
+  list, builtins, onLoad, onDelete, onClose, onRefresh,
 }: {
   list: SavedAnimation[];
   builtins: SavedAnimation[];
   onLoad: (id: string) => void;
   onDelete: (id: string) => Promise<void>;
   onClose: () => void;
+  onRefresh: () => void;
 }) {
+  const [busy, setBusy] = React.useState(false);
+
+  async function handleBackup() {
+    setBusy(true);
+    try { await shareBackup(); } catch (e: any) { Alert.alert('Backup failed', e.message); }
+    finally { setBusy(false); }
+  }
+
+  async function handleRestore(mode: 'merge' | 'replace') {
+    setBusy(true);
+    try { await importWithAlerts(mode); onRefresh(); }
+    finally { setBusy(false); }
+  }
+
   function AnimRow({ a, deletable }: { a: SavedAnimation; deletable: boolean }) {
     return (
       <View style={styles.listItem}>
@@ -421,6 +438,29 @@ function SavedListView({
         </TouchableOpacity>
         <Text style={styles.listTitle}>Animations</Text>
       </View>
+
+      {/* Backup / Restore bar */}
+      <View style={styles.backupBar}>
+        <TouchableOpacity
+          style={[styles.backupBtn, busy && styles.backupBtnDisabled]}
+          onPress={handleBackup}
+          disabled={busy}
+        >
+          <Text style={styles.backupBtnText}>⬆ Backup</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.backupBtn, busy && styles.backupBtnDisabled]}
+          disabled={busy}
+          onPress={() => Alert.alert('Restore', 'Merge with existing or replace all?', [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Merge', onPress: () => handleRestore('merge') },
+            { text: 'Replace all', style: 'destructive', onPress: () => handleRestore('replace') },
+          ])}
+        >
+          <Text style={styles.backupBtnText}>⬇ Restore</Text>
+        </TouchableOpacity>
+      </View>
+
       <ScrollView>
         <Text style={styles.listSection}>Built-in</Text>
         {builtins.map(a => <AnimRow key={a.id} a={a} deletable={false} />)}
@@ -495,6 +535,10 @@ const styles = StyleSheet.create({
   // List
   listTitle:         { color: '#fff', fontSize: 19, fontWeight: '700' },
   listSection:       { color: '#888', fontSize: 11, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase', paddingHorizontal: 16, paddingTop: 16, paddingBottom: 6 },
+  backupBar:         { flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingBottom: 8, borderBottomWidth: 1, borderColor: '#1e1e1e' },
+  backupBtn:         { flex: 1, backgroundColor: '#1a1a1a', borderRadius: 8, paddingVertical: 9, alignItems: 'center', borderWidth: 1, borderColor: '#333' },
+  backupBtnDisabled: { opacity: 0.4 },
+  backupBtnText:     { color: '#00d4ff', fontWeight: '600', fontSize: 13 },
   emptyText:         { color: '#555', textAlign: 'center', marginTop: 48, fontSize: 14 },
   listItem:          { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderColor: '#1e1e1e' },
   listItemInfo:      { flex: 1 },
