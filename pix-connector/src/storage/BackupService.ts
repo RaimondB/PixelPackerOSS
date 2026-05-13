@@ -1,5 +1,6 @@
-import { Share, Alert } from 'react-native';
+import { Alert } from 'react-native';
 import RNFS from 'react-native-fs';
+import RNShare from 'react-native-share';
 import DocumentPicker from 'react-native-document-picker';
 import { AnimationStore, SavedAnimation } from './AnimationStore';
 
@@ -75,24 +76,36 @@ function buildBackupJson(): Promise<string> {
   });
 }
 
-async function writeToExternalDir(json: string): Promise<string> {
+function backupFilename(): string {
   const date = new Date().toISOString().slice(0, 10);
-  const filename = `pixelpacker-backup-${date}.json`;
-  const path = `${RNFS.ExternalDirectoryPath}/${filename}`;
+  return `pixelpacker-backup-${date}.json`;
+}
+
+async function writeToCacheDir(json: string): Promise<string> {
+  const path = `${RNFS.CachesDirectoryPath}/${backupFilename()}`;
   await RNFS.writeFile(path, json, 'utf8');
   return path;
 }
 
+async function writeToExternalDir(json: string): Promise<void> {
+  const path = `${RNFS.ExternalDirectoryPath}/${backupFilename()}`;
+  await RNFS.writeFile(path, json, 'utf8');
+}
+
 // Writes a backup file and opens the Android share sheet so the user can send
-// it to Google Drive, email, Bluetooth, etc.
+// it to Google Drive, email, Bluetooth, etc. The share sheet sees a proper
+// .json file with a clean filename (not raw text content).
 export async function shareBackup(): Promise<void> {
   const json = await buildBackupJson();
-  // Persist to external app dir so power users can find it via file manager too.
+  const path = await writeToCacheDir(json);
+  // Also persist to external app dir for power users with a file manager.
   try { await writeToExternalDir(json); } catch (_) {}
-  await Share.share(
-    { message: json, title: 'PixelPacker Backup' },
-    { dialogTitle: 'Save / share backup' },
-  );
+  await RNShare.open({
+    url: `file://${path}`,
+    type: 'application/json',
+    filename: backupFilename(),
+    failOnCancel: false,
+  });
 }
 
 // ── Import ─────────────────────────────────────────────────────────────────────
