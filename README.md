@@ -1,12 +1,12 @@
 # PixelPacker OSS
 
-An open-source Android companion app for the **Pix Backpack** LED display, built with React Native.
+An open-source Android companion app for **Pix-style LED backpacks**, built with React Native.
 
-> **Disclaimer:** This project is an independent open-source initiative and is not affiliated with or endorsed by Pix Backpack or its original creators.
+> **Disclaimer:** This project is an independent open-source initiative and is not affiliated with or endorsed by the original creators of Pix-style LED backpacks or their associated software.
 
 ## Background
 
-The official Pix Backpack app (v1.40) is no longer actively supported. This project reverse-engineered the BLE protocol from the original app's React Native bundle and re-implements the core functionality as a clean, maintainable open-source codebase.
+The original companion app for Pix-style LED backpacks is no longer actively supported. This project reverse-engineered the BLE protocol from the original app's React Native bundle and re-implements the core functionality as a clean, maintainable open-source codebase.
 
 ## Features
 
@@ -70,7 +70,7 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 The device communicates over a proprietary BLE service. Key details:
 
 | Opcode | Name | Description |
-|--------|------|-------------|
+| ------ | ---- | ----------- |
 | 0 | SET_FRAME | Upload a frame (8bpp palette-indexed, 16×20 = 320 bytes) |
 | 1 | SET_PALETTE | Set palette (RGB triplets, up to 16 colors) |
 | 2 | SET_FRAME_COUNT | Set number of active frames |
@@ -85,7 +85,7 @@ Three hardware revisions exist with different BLE service UUID bases; the app de
 
 ## Project Structure
 
-```
+```text
 pix-connector/
   src/
     ble/          # BLE service, device protocol, font bitmap data
