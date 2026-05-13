@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  LED burst pattern — 5×5 pixel grid.
+  Canvas: 108×108 dp (standard adaptive icon foreground size).
+  Grid params: cell 14dp, gap 4dp, step 18dp, start 11dp.
+
+  Pattern:
+    . . O . .
+    . O C O .
+    O C C C O
+    . O C O .
+    . . O . .
+
+  O = orange (#ffa500), C = cyan (#00d4ff), . = off (#0f1828)
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- ── Off LEDs ─────────────────────────────────────────────────────── -->
+    <path android:pathData="M11,11 h14 v14 h-14 z" android:fillColor="#0f1828"/>
+    <path android:pathData="M29,11 h14 v14 h-14 z" android:fillColor="#0f1828"/>
+    <path android:pathData="M65,11 h14 v14 h-14 z" android:fillColor="#0f1828"/>
+    <path android:pathData="M83,11 h14 v14 h-14 z" android:fillColor="#0f1828"/>
+    <path android:pathData="M11,29 h14 v14 h-14 z" android:fillColor="#0f1828"/>
+    <path android:pathData="M83,29 h14 v14 h-14 z" android:fillColor="#0f1828"/>
+    <path android:pathData="M11,65 h14 v14 h-14 z" android:fillColor="#0f1828"/>
+    <path android:pathData="M83,65 h14 v14 h-14 z" android:fillColor="#0f1828"/>
+    <path android:pathData="M11,83 h14 v14 h-14 z" android:fillColor="#0f1828"/>
+    <path android:pathData="M29,83 h14 v14 h-14 z" android:fillColor="#0f1828"/>
+    <path android:pathData="M65,83 h14 v14 h-14 z" android:fillColor="#0f1828"/>
+    <path android:pathData="M83,83 h14 v14 h-14 z" android:fillColor="#0f1828"/>
+
+    <!-- ── Orange glow halos (20×20, centered behind each orange LED) ──── -->
+    <path android:pathData="M44,8  h20 v20 h-20 z" android:fillColor="#40ffa500"/>
+    <path android:pathData="M26,26 h20 v20 h-20 z" android:fillColor="#40ffa500"/>
+    <path android:pathData="M62,26 h20 v20 h-20 z" android:fillColor="#40ffa500"/>
+    <path android:pathData="M8,44  h20 v20 h-20 z" android:fillColor="#40ffa500"/>
+    <path android:pathData="M80,44 h20 v20 h-20 z" android:fillColor="#40ffa500"/>
+    <path android:pathData="M26,62 h20 v20 h-20 z" android:fillColor="#40ffa500"/>
+    <path android:pathData="M62,62 h20 v20 h-20 z" android:fillColor="#40ffa500"/>
+    <path android:pathData="M44,80 h20 v20 h-20 z" android:fillColor="#40ffa500"/>
+
+    <!-- ── Cyan glow halos ────────────────────────────────────────────── -->
+    <path android:pathData="M44,26 h20 v20 h-20 z" android:fillColor="#4000d4ff"/>
+    <path android:pathData="M26,44 h20 v20 h-20 z" android:fillColor="#4000d4ff"/>
+    <path android:pathData="M44,44 h20 v20 h-20 z" android:fillColor="#5500d4ff"/>
+    <path android:pathData="M62,44 h20 v20 h-20 z" android:fillColor="#4000d4ff"/>
+    <path android:pathData="M44,62 h20 v20 h-20 z" android:fillColor="#4000d4ff"/>
+
+    <!-- ── Orange LEDs ────────────────────────────────────────────────── -->
+    <path android:pathData="M47,11 h14 v14 h-14 z" android:fillColor="#ffa500"/>
+    <path android:pathData="M29,29 h14 v14 h-14 z" android:fillColor="#ffa500"/>
+    <path android:pathData="M65,29 h14 v14 h-14 z" android:fillColor="#ffa500"/>
+    <path android:pathData="M11,47 h14 v14 h-14 z" android:fillColor="#ffa500"/>
+    <path android:pathData="M83,47 h14 v14 h-14 z" android:fillColor="#ffa500"/>
+    <path android:pathData="M29,65 h14 v14 h-14 z" android:fillColor="#ffa500"/>
+    <path android:pathData="M65,65 h14 v14 h-14 z" android:fillColor="#ffa500"/>
+    <path android:pathData="M47,83 h14 v14 h-14 z" android:fillColor="#ffa500"/>
+
+    <!-- ── Cyan LEDs ──────────────────────────────────────────────────── -->
+    <path android:pathData="M47,29 h14 v14 h-14 z" android:fillColor="#00d4ff"/>
+    <path android:pathData="M29,47 h14 v14 h-14 z" android:fillColor="#00d4ff"/>
+    <path android:pathData="M47,47 h14 v14 h-14 z" android:fillColor="#00d4ff"/>
+    <path android:pathData="M65,47 h14 v14 h-14 z" android:fillColor="#00d4ff"/>
+    <path android:pathData="M47,65 h14 v14 h-14 z" android:fillColor="#00d4ff"/>
+
+</vector>

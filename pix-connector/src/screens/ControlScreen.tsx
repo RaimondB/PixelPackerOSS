@@ -223,15 +223,20 @@ export function ControlScreen({ device, onDisconnect, onNavigate }: Props) {
 
       {/* Brightness */}
       <SectionHeader label="Brightness" />
-      <View style={styles.row}>
-        <Btn label="−10" onPress={() => adjustBrightness(-10)} disabled={busy || !connected} />
-        <Text style={styles.brightnessVal}>{brightness}%</Text>
-        <Btn label="+10" onPress={() => adjustBrightness(10)} disabled={busy || !connected} />
+      <View style={styles.brightnessRow}>
+        <Btn label="−" onPress={() => adjustBrightness(-10)} disabled={busy || !connected} />
+        <View style={styles.brightnessBarArea}>
+          <View style={styles.brightnessBarTrack}>
+            <View style={[styles.brightnessBarFill, { width: `${brightness}%` as any }]} />
+          </View>
+          <Text style={styles.brightnessVal}>{brightness}%</Text>
+        </View>
+        <Btn label="+" onPress={() => adjustBrightness(10)} disabled={busy || !connected} />
       </View>
       <View style={styles.row}>
-        <Btn label="0%" onPress={() => run('Brightness → 0%', async () => { await device.setBrightness(0); setBrightness(0); })} disabled={busy || !connected} />
+        <Btn label="Off" onPress={() => run('Brightness → 0%', async () => { await device.setBrightness(0); setBrightness(0); })} disabled={busy || !connected} />
         <Btn label="50%" onPress={() => run('Brightness → 50%', async () => { await device.setBrightness(50); setBrightness(50); })} disabled={busy || !connected} />
-        <Btn label="100%" onPress={() => run('Brightness → 100%', async () => { await device.setBrightness(100); setBrightness(100); })} disabled={busy || !connected} />
+        <Btn label="Max" onPress={() => run('Brightness → 100%', async () => { await device.setBrightness(100); setBrightness(100); })} disabled={busy || !connected} />
       </View>
 
       {/* Display Modes */}
@@ -337,7 +342,11 @@ const styles = StyleSheet.create({
   sectionHeader:   { color: '#888', fontSize: 12, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase', marginTop: 24, marginBottom: 10 },
   row:             { flexDirection: 'row', gap: 8, marginBottom: 8 },
   modeGrid:        { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 8 },
-  brightnessVal:   { color: '#fff', fontSize: 20, fontWeight: '700', flex: 1, textAlign: 'center', alignSelf: 'center' },
+  brightnessRow:      { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 },
+  brightnessBarArea:  { flex: 1, gap: 4 },
+  brightnessBarTrack: { height: 8, backgroundColor: '#1e1e1e', borderRadius: 4, overflow: 'hidden', borderWidth: 1, borderColor: '#333' },
+  brightnessBarFill:  { height: '100%', backgroundColor: '#00d4ff', borderRadius: 4 },
+  brightnessVal:      { color: '#888', fontSize: 12, textAlign: 'center' },
   spinner:         { marginTop: 12 },
   btn:             { backgroundColor: '#1e1e1e', borderRadius: 8, padding: 12, paddingHorizontal: 16, alignItems: 'center', borderWidth: 1, borderColor: '#333' },
   btnPrimary:      { backgroundColor: '#00d4ff', borderColor: '#00d4ff' },
