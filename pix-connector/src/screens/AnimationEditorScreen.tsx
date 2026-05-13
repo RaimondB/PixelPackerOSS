@@ -4,6 +4,7 @@ import React, {
 import {
   Alert,
   Dimensions,
+  Modal,
   PanResponder,
   ScrollView,
   StyleSheet,
@@ -42,6 +43,7 @@ export function AnimationEditorScreen({ device, onBack, existingId }: Props) {
   const [status, setStatus] = useState('');
   const [savedList, setSavedList] = useState<SavedAnimation[]>([]);
   const [showList, setShowList] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
 
   // Refs used inside the PanResponder closure (avoids stale captures)
   const animRef = useRef(anim);
@@ -283,6 +285,7 @@ export function AnimationEditorScreen({ device, onBack, existingId }: Props) {
         <Btn label="Load" onPress={() => setShowList(true)} />
         <Btn label="Save" onPress={handleSave} disabled={busy} primary />
         <Btn label={busy ? 'Working…' : 'Upload'} onPress={handleUpload} disabled={busy} primary />
+        <Btn label="▶ Preview" onPress={() => setShowPreview(true)} />
       </View>
       {status ? <Text style={styles.status}>{status}</Text> : null}
 
@@ -332,6 +335,10 @@ export function AnimationEditorScreen({ device, onBack, existingId }: Props) {
         </View>
       </View>
 
+      {showPreview && (
+        <PreviewModal anim={anim} onClose={() => setShowPreview(false)} />
+      )}
+
       {/* ── Frame controls (scrollable, below grid) ── */}
       <ScrollView style={styles.controls} keyboardShouldPersistTaps="handled">
         <Text style={styles.sectionLabel}>
@@ -374,6 +381,107 @@ export function AnimationEditorScreen({ device, onBack, existingId }: Props) {
         <View style={{ height: 24 }} />
       </ScrollView>
     </View>
+  );
+}
+
+// ── Animation preview modal ────────────────────────────────────────────────────
+
+function PreviewModal({ anim, onClose }: { anim: SavedAnimation; onClose: () => void }) {
+  const [frameIdx, setFrameIdx] = useState(0);
+  const [playing, setPlaying] = useState(true);
+  const [stopped, setStopped] = useState(false);
+  // Tracks bounce direction for alternate modes: +1 = forward, -1 = backward
+  const pingPongDir = useRef(1);
+
+  const dir = anim.animationDirection ?? 0;
+  const total = anim.frames.length;
+
+  useEffect(() => {
+    if (!playing || stopped || total <= 1) return;
+
+    const duration = anim.durations[frameIdx] ?? 500;
+    const id = setTimeout(() => {
+      let next = frameIdx;
+      let done = false;
+
+      switch (dir) {
+        case 0: // normal loop
+          next = (frameIdx + 1) % total;
+          break;
+        case 1: // alternate ping-pong
+          next = frameIdx + pingPongDir.current;
+          if (next >= total) { pingPongDir.current = -1; next = Math.max(0, total - 2); }
+          else if (next < 0) { pingPongDir.current = 1; next = Math.min(total - 1, 1); }
+          break;
+        case 2: // normal-stop
+          if (frameIdx >= total - 1) { done = true; }
+          else { next = frameIdx + 1; }
+          break;
+        case 3: // alternate-stop
+          next = frameIdx + pingPongDir.current;
+          if (next >= total) { pingPongDir.current = -1; next = Math.max(0, total - 2); }
+          else if (next < 0) { done = true; next = 0; }
+          break;
+        default:
+          next = (frameIdx + 1) % total;
+      }
+
+      if (done) setStopped(true);
+      else setFrameIdx(next);
+    }, duration);
+
+    return () => clearTimeout(id);
+  }, [frameIdx, playing, stopped, total, dir, anim.durations]);
+
+  function restart() {
+    pingPongDir.current = 1;
+    setFrameIdx(0);
+    setStopped(false);
+    setPlaying(true);
+  }
+
+  const cellSize = Math.max(4, Math.floor((SCREEN_W - 64) / anim.width));
+  const pixels = anim.frames[frameIdx] ?? [];
+
+  return (
+    <Modal transparent animationType="fade" onRequestClose={onClose}>
+      <View style={previewStyles.overlay}>
+        <View style={previewStyles.modal}>
+          <Text style={previewStyles.title}>{anim.name}</Text>
+
+          <View style={[previewStyles.grid, {
+            width: cellSize * anim.width,
+            height: cellSize * anim.height,
+          }]}>
+            {pixels.map((colorIdx, i) => (
+              <View
+                key={i}
+                style={{
+                  position: 'absolute',
+                  left: (i % anim.width) * cellSize,
+                  top: Math.floor(i / anim.width) * cellSize,
+                  width: cellSize,
+                  height: cellSize,
+                  backgroundColor: anim.palette[colorIdx] ?? '#000',
+                }}
+              />
+            ))}
+          </View>
+
+          <Text style={previewStyles.frameLabel}>
+            Frame {frameIdx + 1} / {total}{stopped ? ' · done' : ''}
+          </Text>
+
+          <View style={previewStyles.btnRow}>
+            {stopped
+              ? <Btn label="↺ Restart" onPress={restart} />
+              : <Btn label={playing ? '⏸ Pause' : '▶ Play'} onPress={() => setPlaying(p => !p)} />
+            }
+            <Btn label="✕ Close" onPress={onClose} danger />
+          </View>
+        </View>
+      </View>
+    </Modal>
   );
 }
 
@@ -547,4 +655,13 @@ const styles = StyleSheet.create({
   listBtn:           { backgroundColor: '#1e1e1e', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 7, marginLeft: 6, borderWidth: 1, borderColor: '#333' },
   listBtnDanger:     { borderColor: '#c0392b' },
   listBtnText:       { color: '#fff', fontWeight: '600', fontSize: 13 },
+});
+
+const previewStyles = StyleSheet.create({
+  overlay:    { flex: 1, backgroundColor: 'rgba(0,0,0,0.88)', alignItems: 'center', justifyContent: 'center' },
+  modal:      { backgroundColor: '#111', borderRadius: 16, padding: 20, alignItems: 'center', maxWidth: SCREEN_W - 32 },
+  title:      { color: '#fff', fontSize: 16, fontWeight: '700', marginBottom: 16 },
+  grid:       { position: 'relative', backgroundColor: '#000', marginBottom: 12 },
+  frameLabel: { color: '#666', fontSize: 12, marginBottom: 16 },
+  btnRow:     { flexDirection: 'row', gap: 12 },
 });
