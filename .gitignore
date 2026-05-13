@@ -1,0 +1,41 @@
+inputs/
+
+# Claude Code project memory — local only
+.claude/
+
+# Dev notes / scratch files
+plan.md
+
+# ── React Native / Node ──────────────────────────────────────────────────────
+pix-connector/node_modules/
+pix-connector/.metro-cache/
+pix-connector/.metro-transform-cache/
+pix-connector/vendor/
+
+# ── Android ──────────────────────────────────────────────────────────────────
+pix-connector/android/.gradle/
+pix-connector/android/app/build/
+pix-connector/android/build/
+pix-connector/android/local.properties
+pix-connector/android/app/src/main/assets/index.android.bundle
+pix-connector/android/app/src/main/assets/index.android.bundle.map
+pix-connector/android/app/src/main/res/drawable-*
+pix-connector/android/app/src/main/res/raw/
+
+# ── iOS (not used but keep clean) ────────────────────────────────────────────
+pix-connector/ios/Pods/
+pix-connector/ios/build/
+pix-connector/ios/*.xcworkspace
+pix-connector/*.pbxuser
+pix-connector/*.mode1v3
+pix-connector/*.mode2v3
+pix-connector/*.perspectivev3
+pix-connector/xcuserdata/
+
+# ── Editor / OS ──────────────────────────────────────────────────────────────
+.DS_Store
+.vscode/
+*.swp
+*.swo
+Thumbs.db
+*~
