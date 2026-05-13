@@ -17,7 +17,7 @@ import {
   MODE_BIKE, MODE_PIX_BLOCKS, MODE_PIXEL_BREAKER, MODE_CRAWLER,
 } from '../ble/constants';
 
-export type NavigateTo = 'bike' | 'pixel-breaker' | 'animation-editor' | 'scrolling-text';
+export type NavigateTo = 'bike' | 'pixel-breaker' | 'animation-editor' | 'scrolling-text' | 'dice';
 
 interface Props {
   device: Backpack;
@@ -260,6 +260,13 @@ export function ControlScreen({ device, onDisconnect, onNavigate }: Props) {
         <Btn
           label="Scrolling Text ▶"
           onPress={() => onNavigate('scrolling-text')}
+          highlight
+        />
+      </View>
+      <View style={styles.row}>
+        <Btn
+          label="🎲 Roll the Dice ▶"
+          onPress={() => onNavigate('dice')}
           highlight
         />
       </View>

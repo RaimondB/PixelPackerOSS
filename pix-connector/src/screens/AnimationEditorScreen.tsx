@@ -216,7 +216,7 @@ export function AnimationEditorScreen({ device, onBack, existingId }: Props) {
         await device.setFrame(i, frameToBytes(a.frames[i]));     // 8bpp: one byte per palette index
       }
       await device.setFrameDurations(durationsToBytes(a.durations));
-      await device.setAnimationDirection(0);                      // 0 = normal
+      await device.setAnimationDirection(a.animationDirection ?? 0);
       await device.setFrameCount(a.frames.length);                // set actual count last
       await device.saveAnimationToPersistentMemory();
       await device.setRenderMode(MODE_ANIMATION);

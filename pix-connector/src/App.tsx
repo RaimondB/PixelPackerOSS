@@ -6,9 +6,10 @@ import { BikeScreen } from './screens/BikeScreen';
 import { PixelBreakerScreen } from './screens/PixelBreakerScreen';
 import { AnimationEditorScreen } from './screens/AnimationEditorScreen';
 import { ScrollingTextScreen } from './screens/ScrollingTextScreen';
+import { DiceScreen } from './screens/DiceScreen';
 import type { Backpack } from './ble/Backpack';
 
-type AppScreen = 'devices' | 'control' | 'bike' | 'pixel-breaker' | 'animation-editor' | 'scrolling-text';
+type AppScreen = 'devices' | 'control' | 'bike' | 'pixel-breaker' | 'animation-editor' | 'scrolling-text' | 'dice';
 
 export default function App() {
   const [device, setDevice] = useState<Backpack | null>(null);
@@ -62,6 +63,10 @@ export default function App() {
 
       {screen === 'scrolling-text' && device && (
         <ScrollingTextScreen device={device} onBack={goBack} />
+      )}
+
+      {screen === 'dice' && device && (
+        <DiceScreen device={device} onBack={goBack} />
       )}
     </SafeAreaView>
   );

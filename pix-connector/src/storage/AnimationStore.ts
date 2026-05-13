@@ -10,6 +10,8 @@ export interface SavedAnimation {
   palette: string[];  // 16 hex colors e.g. '#ff0000'
   frames: number[][]; // each frame: flat array of color indices (0-15), length = width*height
   durations: number[]; // ms per frame, same length as frames
+  // 0=normal loop, 1=alternate/ping-pong, 2=normal-stop, 3=alternate-stop (default 0)
+  animationDirection?: number;
   createdAt: number;
 }
 
