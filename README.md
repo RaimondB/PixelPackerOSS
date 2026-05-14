@@ -1,8 +1,8 @@
 # PixelPacker OSS
 
-An open-source Android companion app for **Pix-style LED backpacks**, built with React Native.
+An open-source Android companion app for **Pix Backpacks**, built with React Native.
 
-> **Disclaimer:** This project is an independent open-source initiative and is not affiliated with or endorsed by the original creators of Pix-style LED backpacks or their associated software.
+> **Disclaimer:** This project is an independent open-source initiative and is not affiliated with or endorsed by the original creators of Pix Backpack LED backpacks or their associated software.
 
 ## Background
 
