@@ -5,7 +5,7 @@
 import type { Peripheral } from 'react-native-ble-manager';
 import { Device } from './Device';
 import { Protocol } from './Protocol';
-import { toUint16Bytes, bytesToUnsignedNumber, bytesToString } from './utils';
+import { toUint16Bytes, toUint32Bytes, bytesToUnsignedNumber, bytesToString } from './utils';
 import * as C from './constants';
 
 const PIX_MAC_RE = /^[0-9a-f]{12}$/;
@@ -156,6 +156,57 @@ export class Backpack extends Device {
 
   saveAnimationToPersistentMemory(): Promise<void> {
     return this.sendCommand(C.OPCODE_SAVE_TO_PERSISTENT_MEMORY);
+  }
+
+  // Clock: replicates original app's full clock setup sequence.
+  // utcOffsetHours: the user's UTC offset (e.g. +2 for UTC+2).
+  // The device adds the timezone string value to the UTC timestamp, so the string
+  // must use the INVERTED sign (original app convention: UTC+2 zone → send "UTC-2").
+  async setClockMode(utcOffsetHours: number): Promise<void> {
+    const now = Math.floor(Date.now() / 1000); // raw UTC — device adjusts via tz string
+
+    // Device adds the tz string offset to UTC, so invert the sign:
+    // UTC+2 → send "UTC-2" so device computes UTC + 2 = local.
+    const invSign = utcOffsetHours >= 0 ? '-' : '+';
+    const tzBytes = Array.from(`UTC${invSign}${Math.abs(utcOffsetHours)}`).map(c => c.charCodeAt(0));
+
+    await this.setRenderModeNone();
+    // palette: 0=white (digits), 1=red (marker), 2=black (alarm)
+    await this.setPalette([255, 255, 255, 255, 0, 0, 0, 0, 0]);
+
+    const config: number[] = [
+      C.MODE_CLOCK,
+      ...toUint32Bytes(now),           // UTC timestamp
+      ...toUint32Bytes(now - 60),      // alarm time (disabled)
+      0,                               // alarm duration = 0 (disabled)
+      0,                               // stage = 0
+      1,                               // watch face = 1 (default)
+      1,                               // time format = 1 (24h)
+      6, 0,                            // position = 6 (original display, uint16 LE)
+      0, 0, 0, 0,                      // h1, h2, m1, m2 color index = 0 (white)
+      1, 1,                            // AM, PM marker color index = 1 (red)
+      2,                               // alarm color index = 2 (black/unused)
+      ...tzBytes,                      // timezone string (inverted sign convention)
+      0,                               // null terminator
+    ];
+    await this.setRenderMode(config);
+  }
+
+  // Countdown: seconds capped at 5999 (≈99:59) per original widget.
+  // Payload: [MODE_COUNTDOWN, 0, seconds_lo, seconds_hi, 5]
+  setCountdownMode(seconds: number): Promise<void> {
+    const s = Math.min(Math.max(0, seconds), 5999);
+    return this.setRenderMode([C.MODE_COUNTDOWN, 0, ...toUint16Bytes(s), 5]);
+  }
+
+  // Demo mode characteristic (0110): value 0 = enabled, 1 = disabled.
+  async readDemoModeState(): Promise<boolean> {
+    const b = await this.read(this.protocol.getServiceUuid(), this.protocol.demoModeState);
+    return b[0] === 0;
+  }
+
+  setDemoModeEnabled(enabled: boolean): Promise<void> {
+    return this.write(this.protocol.getServiceUuid(), this.protocol.demoModeState, [enabled ? 0 : 1]);
   }
 
   restart(): Promise<void> {

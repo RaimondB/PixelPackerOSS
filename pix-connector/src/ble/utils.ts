@@ -2,6 +2,10 @@ export function toUint16Bytes(n: number): [number, number] {
   return [n & 0xff, (n >> 8) & 0xff];
 }
 
+export function toUint32Bytes(n: number): [number, number, number, number] {
+  return [n & 0xff, (n >> 8) & 0xff, (n >> 16) & 0xff, (n >> 24) & 0xff];
+}
+
 export function bytesToUnsignedNumber(bytes: number[]): number {
   return bytes.reduce((acc, byte, i) => acc + byte * Math.pow(256, i), 0);
 }

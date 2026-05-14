@@ -17,7 +17,8 @@ import {
   MODE_BIKE, MODE_PIX_BLOCKS, MODE_PIXEL_BREAKER, MODE_CRAWLER,
 } from '../ble/constants';
 
-export type NavigateTo = 'bike' | 'pixel-breaker' | 'animation-editor' | 'scrolling-text' | 'dice';
+
+export type NavigateTo = 'bike' | 'pixel-breaker' | 'animation-editor' | 'scrolling-text' | 'dice' | 'countdown' | 'clock';
 
 interface Props {
   device: Backpack;
@@ -34,25 +35,26 @@ interface DeviceInfo {
 }
 
 // Modes that open a dedicated control screen instead of just setting the mode
-const INTERACTIVE_MODES = new Set([MODE_BIKE, MODE_PIXEL_BREAKER]);
+const INTERACTIVE_MODES = new Set([MODE_BIKE, MODE_PIXEL_BREAKER, MODE_COUNTDOWN, MODE_CLOCK]);
 
 const MODES = [
-  { label: 'Animation',     value: MODE_ANIMATION },
-  { label: 'Clock',         value: MODE_CLOCK },
-  { label: 'Scrolling',     value: MODE_SCROLLING },
-  { label: 'Stopwatch',     value: MODE_STOPWATCH },
-  { label: 'Countdown',     value: MODE_COUNTDOWN },
-  { label: 'Bike ▶',        value: MODE_BIKE },
-  { label: 'Pix Blocks',    value: MODE_PIX_BLOCKS },
+  { label: 'Animation',       value: MODE_ANIMATION },
+  { label: 'Clock ▶',         value: MODE_CLOCK },
+  { label: 'Scrolling',       value: MODE_SCROLLING },
+  { label: 'Stopwatch',       value: MODE_STOPWATCH },
+  { label: 'Countdown ▶',     value: MODE_COUNTDOWN },
+  { label: 'Bike ▶',          value: MODE_BIKE },
+  { label: 'Pix Blocks',      value: MODE_PIX_BLOCKS },
   { label: 'Pixel Breaker ▶', value: MODE_PIXEL_BREAKER },
-  { label: 'Crawler',       value: MODE_CRAWLER },
-  { label: 'Off',           value: MODE_NONE },
+  { label: 'Crawler',         value: MODE_CRAWLER },
+  { label: 'Off',             value: MODE_NONE },
 ] as const;
 
 export function ControlScreen({ device, onDisconnect, onNavigate }: Props) {
   const [info, setInfo] = useState<DeviceInfo | null>(null);
   const [brightness, setBrightness] = useState(50);
   const [activeMode, setActiveMode] = useState<number | null>(null);
+  const [demoMode, setDemoMode] = useState<boolean | null>(null); // null = not supported
   const [status, setStatus] = useState('Loading device info…');
   const [busy, setBusy] = useState(false);
   const [connected, setConnected] = useState(true);
@@ -77,6 +79,11 @@ export function ControlScreen({ device, onDisconnect, onNavigate }: Props) {
       } catch (err: any) {
         setStatus(`Failed to read device: ${err.message}`);
       }
+      // Demo mode is optional — silently skip if unsupported
+      try {
+        const enabled = await device.readDemoModeState();
+        setDemoMode(enabled);
+      } catch (_) {}
     }
     load();
   }, [device]);
@@ -159,19 +166,23 @@ export function ControlScreen({ device, onDisconnect, onNavigate }: Props) {
   }, [brightness, device, run]);
 
   const handleMode = useCallback(async (mode: number, label: string) => {
-    if (mode === MODE_BIKE) {
-      onNavigate('bike');
-      return;
-    }
-    if (mode === MODE_PIXEL_BREAKER) {
-      onNavigate('pixel-breaker');
-      return;
-    }
+    if (mode === MODE_BIKE) { onNavigate('bike'); return; }
+    if (mode === MODE_PIXEL_BREAKER) { onNavigate('pixel-breaker'); return; }
+    if (mode === MODE_COUNTDOWN) { onNavigate('countdown'); return; }
+    if (mode === MODE_CLOCK) { onNavigate('clock'); return; }
     await run(`Mode → ${label}`, async () => {
       await device.setRenderMode(mode);
       setActiveMode(mode);
     });
   }, [device, onNavigate, run]);
+
+  const toggleDemoMode = useCallback(async () => {
+    const next = !demoMode;
+    await run(`Demo mode → ${next ? 'on' : 'off'}`, async () => {
+      await device.setDemoModeEnabled(next);
+      setDemoMode(next);
+    });
+  }, [device, demoMode, run]);
 
   const uploadTestAnimation = useCallback(async () => {
     await run('Upload test animation', async () => {
@@ -286,6 +297,14 @@ export function ControlScreen({ device, onDisconnect, onNavigate }: Props) {
       <SectionHeader label="Device" />
       <View style={styles.row}>
         <Btn label="Restart" onPress={() => run('Restart', () => device.restart())} disabled={busy || !connected} />
+        {demoMode !== null && (
+          <Btn
+            label={demoMode ? 'Demo: On' : 'Demo: Off'}
+            onPress={toggleDemoMode}
+            disabled={busy || !connected}
+            active={demoMode}
+          />
+        )}
       </View>
       <Btn label="Disconnect" onPress={disconnect} danger />
     </ScrollView>

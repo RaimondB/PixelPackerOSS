@@ -7,9 +7,11 @@ import { PixelBreakerScreen } from './screens/PixelBreakerScreen';
 import { AnimationEditorScreen } from './screens/AnimationEditorScreen';
 import { ScrollingTextScreen } from './screens/ScrollingTextScreen';
 import { DiceScreen } from './screens/DiceScreen';
+import { CountdownScreen } from './screens/CountdownScreen';
+import { ClockScreen } from './screens/ClockScreen';
 import type { Backpack } from './ble/Backpack';
 
-type AppScreen = 'devices' | 'control' | 'bike' | 'pixel-breaker' | 'animation-editor' | 'scrolling-text' | 'dice';
+type AppScreen = 'devices' | 'control' | 'bike' | 'pixel-breaker' | 'animation-editor' | 'scrolling-text' | 'dice' | 'countdown' | 'clock';
 
 export default function App() {
   const [device, setDevice] = useState<Backpack | null>(null);
@@ -67,6 +69,14 @@ export default function App() {
 
       {screen === 'dice' && device && (
         <DiceScreen device={device} onBack={goBack} />
+      )}
+
+      {screen === 'countdown' && device && (
+        <CountdownScreen device={device} onBack={goBack} />
+      )}
+
+      {screen === 'clock' && device && (
+        <ClockScreen device={device} onBack={goBack} />
       )}
     </SafeAreaView>
   );
